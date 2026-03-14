@@ -34,7 +34,27 @@ exports.register = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
   try {
-    const { phone } = req.body;
+    const { phone, password } = req.body;
+    const existingUser = await User.findOne({ phone });
+
+    if (existingUser === null) {
+      return errorResponse(res, 404, "User not found !!");
+    }
+
+    const isPasswordMatched = await bcrypt.compare(
+      password,
+      existingUser.password,
+    );
+
+    if (!isPasswordMatched) {
+      return errorResponse(res, 400, "Username or password is incorrect !!");
+    }
+
+    const token = generateToken({ phone });
+    return successResponse(res, 200, "You have logged in successfully !!", {
+      phone,
+      token,
+    });
   } catch (err) {
     next(err);
   }
