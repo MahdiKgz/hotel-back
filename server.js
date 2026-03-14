@@ -18,7 +18,7 @@ async function initServer() {
 }
 
 async function run() {
-  db.sync({ force: true });
+  db.sync({ alter: true });
   await initServer();
 }
 

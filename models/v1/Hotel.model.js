@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const db = require("../../configs/db");
+const User = require("./User.model");
 
 const { STRING, ENUM, INTEGER, TEXT, JSONB } = DataTypes;
 
@@ -39,16 +40,8 @@ const Hotel = db.define(
     },
     coordinates: {
       type: DataTypes.JSON,
-      allowNull: false,
-      validate: {
-        isJson(value) {
-          try {
-            JSON.parse(value);
-          } catch (e) {
-            throw new Error("فرمت مختصات باید JSON باشد");
-          }
-        },
-      },
+      allowNull: true,
+      defaultValue: null,
     },
     metroAccess: {
       type: ENUM("YES", "NO"),
@@ -67,5 +60,8 @@ const Hotel = db.define(
     deletedAt: "deleted_at",
   },
 );
+
+Hotel.belongsTo(User, { foreignKey: "manager_id", as: "manager" });
+User.hasOne(Hotel, { foreignKey: "manager_id", as: "hotels" });
 
 module.exports = Hotel;

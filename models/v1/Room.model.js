@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const db = require("../../configs/db");
+const Hotel = require("./Hotel.model");
 
 const { STRING, ENUM, INTEGER, TEXT } = DataTypes;
 
@@ -64,5 +65,8 @@ const Room = db.define(
     deletedAt: "deleted_at",
   },
 );
+
+Room.belongsTo(Hotel, { foreignKey: "hotel_id", as: "hotel" });
+Hotel.hasMany(Room, { foreignKey: "hotel_id" });
 
 module.exports = Room;
