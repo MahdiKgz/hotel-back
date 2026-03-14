@@ -1,34 +1,7 @@
-const { Sequelize } = require("sequelize");
 require("dotenv").config();
 
 const app = require("./app");
-
-async function connectToDb() {
-  try {
-    const dbConfigs = new Sequelize({
-      database: "hotel",
-      host: "localhost",
-      username: "root",
-      password: "",
-      dialect: "mysql",
-
-      logging: process.env.NODE_ENV === "production" ? false : console.log,
-    });
-
-    dbConfigs
-      .authenticate()
-      .then(() => {
-        console.log("Connected To Database Successfully !!");
-      })
-      .catch((err) => {
-        console.log("Error While trying to connect DB : ", err);
-      });
-  } catch {
-    throw new Error(
-      "Something gone wrong while trying to connect DB. check the options",
-    );
-  }
-}
+const db = require("./configs/db");
 
 async function initServer() {
   try {
@@ -45,7 +18,7 @@ async function initServer() {
 }
 
 async function run() {
-  await connectToDb();
+  db.sync({ force: true });
   await initServer();
 }
 
