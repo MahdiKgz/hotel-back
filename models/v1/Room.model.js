@@ -13,7 +13,7 @@ const Room = db.define(
     },
     slug: {
       type: STRING(30),
-      allowNull : false,
+      allowNull: false,
       unique: true,
     },
     capacity: {
@@ -23,6 +23,16 @@ const Room = db.define(
     status: {
       type: ENUM("RESERVED", "MAINTAIN", "EMPTY"),
       allowNull: false,
+    },
+    price: {
+      type: INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    bookType: {
+      type: ENUM("DAILY", "WEEKLY", "MONTHLY"),
+      allowNull: false,
+      defaultValue: "DAILY",
     },
     bathService: {
       type: INTEGER,
