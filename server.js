@@ -1,4 +1,5 @@
 require("dotenv").config();
+require("./redis");
 
 const app = require("./app");
 const db = require("./configs/db");
