@@ -3,9 +3,11 @@ const { generateToken } = require("../../utils/auth");
 const { errorResponse, successResponse } = require("../../utils/responses");
 const { registerValidator } = require("../../validators/auth.validator");
 
+const bcrypt = require("bcryptjs");
+
 exports.register = async (req, res, next) => {
   try {
-    const { phone } = req.body;
+    const { phone, password } = req.body;
     await registerValidator.validate(req.body, { abortEarly: false });
 
     const existingUser = await User.findOne({
@@ -16,14 +18,23 @@ exports.register = async (req, res, next) => {
     if (existingUser) {
       return errorResponse(res, 400, "User already exists !!");
     }
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    await User.create(req.body);
+    await User.create({ ...req.body, password: hashedPassword });
 
     const token = generateToken({ phone });
     return successResponse(res, 201, "User created successfully !!", {
       phone,
       token,
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.login = async (req, res, next) => {
+  try {
+    const { phone } = req.body;
   } catch (err) {
     next(err);
   }
