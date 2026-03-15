@@ -81,3 +81,28 @@ exports.sendOTP = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.verifyOTP = async (req, res, next) => {
+  try {
+    const { phone, otp } = req.body;
+    const user = await User.findOne({
+      where: {
+        phone,
+      },
+    });
+    if (user === null) {
+      return errorResponse(res, 404, "User not found !!");
+    }
+    const duumyOTP = "1111"; // simulation for redis get otp operation
+    if (otp !== duumyOTP) {
+      return errorResponse(res, 400, "Incorrect OTP code provided !!");
+    }
+
+    const token = generateToken({ phone });
+    return successResponse(res, 200, "You have logged In successfully!!", {
+      token,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
