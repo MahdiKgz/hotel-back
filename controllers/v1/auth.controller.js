@@ -1,6 +1,11 @@
 const User = require("../../models/v1/User.model");
 const redis = require("../../redis");
-const { generateToken, createOtp } = require("../../utils/auth");
+const {
+  generateToken,
+  generateOtp,
+  getOtpDetails,
+  getOtpRedisPattern,
+} = require("../../utils/auth");
 const { errorResponse, successResponse } = require("../../utils/responses");
 const { registerValidator } = require("../../validators/auth.validator");
 
@@ -24,7 +29,6 @@ exports.register = async (req, res, next) => {
     await User.create({ ...req.body, password: hashedPassword });
 
     const token = generateToken({ phone });
-    const otp = createOtp(phone);
     return successResponse(res, 201, "User created successfully !!", {
       phone,
       token,
@@ -65,18 +69,35 @@ exports.login = async (req, res, next) => {
 exports.sendOTP = async (req, res, next) => {
   try {
     const { phone } = req.body;
-    const existingUser = User.findOne({
+
+    const user = await User.findOne({
       where: {
         phone,
       },
     });
 
-    if (existingUser === null) {
+    console.log("user => ", user);
+
+    if (user === null) {
       return errorResponse(res, 404, "User not found !!");
     }
-    const { otp } = await createOtp(phone, 6);
 
-    return successResponse(res, 200, "OTP created successfully", { otp });
+    const { expired, remainingTime } = await getOtpDetails(phone);
+
+    if (!expired) {
+      return successResponse(res, 200, {
+        message: `OTP already sent, Please try again after ${remainingTime}`,
+      });
+    }
+
+    const otp = await generateOtp(phone);
+
+    return successResponse(
+      res,
+      200,
+      { message: "otp sent successfully :))" },
+      { otp },
+    );
   } catch (err) {
     next(err);
   }
@@ -85,21 +106,36 @@ exports.sendOTP = async (req, res, next) => {
 exports.verifyOTP = async (req, res, next) => {
   try {
     const { phone, otp } = req.body;
-    const user = await User.findOne({
+
+    const savedOtp = await redis.get(getOtpRedisPattern(phone));
+
+    if (!savedOtp) {
+      return errorResponse(res, 400, "Wrong or expired OTP");
+    }
+
+    const otpIsCorrect = await bcrypt.compare(otp, savedOtp);
+
+    if (!otpIsCorrect) {
+      return errorResponse(res, 400, "Wrong or expired OTP !!");
+    }
+
+    const existingUser = await User.findOne({
       where: {
         phone,
       },
     });
-    if (user === null) {
-      return errorResponse(res, 404, "User not found !!");
-    }
-    const duumyOTP = "1111"; // simulation for redis get otp operation
-    if (otp !== duumyOTP) {
-      return errorResponse(res, 400, "Incorrect OTP code provided !!");
+    if (existingUser === null) {
+      return errorResponse(
+        res,
+        404,
+        "No such user is available , Register first !!",
+      );
     }
 
     const token = generateToken({ phone });
-    return successResponse(res, 200, "You have logged In successfully!!", {
+
+    return successResponse(res, 200, "You have logged in Successfully !!", {
+      user: existingUser,
       token,
     });
   } catch (err) {
