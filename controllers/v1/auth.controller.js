@@ -142,3 +142,49 @@ exports.verifyOTP = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.resetPassword = async (req, res, next) => {
+  try {
+    const { phone, password, newPassword, confirmNewPassword } = req.body;
+
+    const user = await User.findOne({
+      where: {
+        phone,
+      },
+    });
+
+    if (user === null) {
+      return errorResponse(res, 404, "User not found !!");
+    }
+
+    const isPasswordMatched = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordMatched) {
+      return errorResponse(res, 400, "current password is not correct !!");
+    }
+
+    if (password === newPassword) {
+      return errorResponse(
+        res,
+        402,
+        "new password and current password can not be same !!",
+      );
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      return errorResponse(
+        res,
+        400,
+        "new password and its confirm are not matched !!",
+      );
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+
+    await User.update({ password: hashedNewPassword }, { where: { phone } });
+
+    return successResponse(res, 200, "password Changed successfully !!");
+  } catch (err) {
+    next(err);
+  }
+};
