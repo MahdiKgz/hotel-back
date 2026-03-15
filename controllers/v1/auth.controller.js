@@ -1,5 +1,6 @@
 const User = require("../../models/v1/User.model");
-const { generateToken } = require("../../utils/auth");
+const redis = require("../../redis");
+const { generateToken, createOtp } = require("../../utils/auth");
 const { errorResponse, successResponse } = require("../../utils/responses");
 const { registerValidator } = require("../../validators/auth.validator");
 
@@ -23,6 +24,7 @@ exports.register = async (req, res, next) => {
     await User.create({ ...req.body, password: hashedPassword });
 
     const token = generateToken({ phone });
+    const otp = createOtp(phone);
     return successResponse(res, 201, "User created successfully !!", {
       phone,
       token,
@@ -55,6 +57,26 @@ exports.login = async (req, res, next) => {
       phone,
       token,
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.sendOTP = async (req, res, next) => {
+  try {
+    const { phone } = req.body;
+    const existingUser = User.findOne({
+      where: {
+        phone,
+      },
+    });
+
+    if (existingUser === null) {
+      return errorResponse(res, 404, "User not found !!");
+    }
+    const { otp } = await createOtp(phone, 6);
+
+    return successResponse(res, 200, "OTP created successfully", { otp });
   } catch (err) {
     next(err);
   }
