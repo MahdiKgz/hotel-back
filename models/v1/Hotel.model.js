@@ -17,6 +17,11 @@ const Hotel = db.define(
       allowNull: false,
       unique: true,
     },
+    cover: {
+      type: STRING,
+      allowNull: true,
+      defaultValue: null,
+    },
     country: {
       type: INTEGER,
       allowNull: false,

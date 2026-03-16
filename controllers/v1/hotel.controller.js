@@ -1,4 +1,5 @@
 const Hotel = require("../../models/v1/Hotel.model");
+const HotelImage = require("../../models/v1/HotelImages.model");
 const Room = require("../../models/v1/Room.model");
 const User = require("../../models/v1/User.model");
 const { errorResponse, successResponse } = require("../../utils/responses");
@@ -102,6 +103,62 @@ exports.remove = async (req, res, next) => {
       },
     });
     return successResponse(res, 200, "Hotel removed successfully !!");
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.setCover = async (req, res, next) => {
+  try {
+    const { slug } = req.params;
+    if (!req.file) {
+      return errorResponse(res, 400, "Cover has not been uploaded !!");
+    }
+
+    const { path } = req.file;
+
+    await Hotel.update({ cover: path }, { where: { slug } });
+
+    return successResponse(res, 200, "Cover has been set successfully !!");
+  } catch (err) {}
+};
+
+exports.setImages = async (req, res, next) => {
+  try {
+    const { slug } = req.params;
+    const hotel = await Hotel.findOne({
+      where: {
+        slug,
+      },
+      raw: true,
+    });
+
+    if (hotel === null) {
+      return errorResponse(res, 400, "Hotel NOT found !!");
+    }
+
+    if (!req.files.length || req.files.length > 10) {
+      return errorResponse(
+        res,
+        400,
+        "You may not upload any file or You have uploaded more than 10 images",
+      );
+    }
+
+    const images = req.files.map((image, index) => ({
+      url: image.path,
+      order: index + 1,
+      isCover: false,
+      hotel_id: hotel.id,
+    }));
+
+    await HotelImage.bulkCreate(images);
+
+    return successResponse(
+      res,
+      201,
+      "Images have been uploaded successfully !!",
+    );
   } catch (err) {
     next(err);
   }

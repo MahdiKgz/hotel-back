@@ -6,10 +6,15 @@ const {
   getOneHotel,
   update,
   remove,
+  setCover,
+  setImages,
 } = require("../../controllers/v1/hotel.controller");
 
 const auth = require("../../middlewares/auth");
 const { roleGuard } = require("../../middlewares/roleGuard");
+const { multerStorage } = require("../../utils/multer-uploader");
+
+const upload = multerStorage("uploads/covers/");
 
 hotelRouter.route("/").post(auth, roleGuard("ADMIN,MANAGER"), create);
 hotelRouter
@@ -17,5 +22,18 @@ hotelRouter
   .get(getOneHotel)
   .put(auth, roleGuard("ADMIN,MANAGER"), update)
   .delete(auth, roleGuard("ADMIN,MANAGER"), remove);
+
+hotelRouter
+  .route("/:slug/cover")
+  .post(auth, roleGuard("ADMIN,MANAGER"), upload.single("cover"), setCover);
+
+hotelRouter
+  .route("/:slug/images")
+  .post(
+    auth,
+    roleGuard("ADMIN<MANAGER"),
+    upload.array("images", 10),
+    setImages,
+  );
 
 module.exports = hotelRouter;
