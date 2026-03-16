@@ -198,3 +198,22 @@ exports.getMe = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.setAvatar = async (req, res, next) => {
+  try {
+    const { phone } = req.user;
+
+    if (!req.file) {
+      return errorResponse(res, 400, "avatar has not been uploaded !!");
+    }
+    const { path } = req.file;
+    await User.update({ avatar: path }, { where: { phone } });
+    return successResponse(
+      res,
+      201,
+      "User avatar has been set successfully !!",
+    );
+  } catch (err) {
+    next(err);
+  }
+};
