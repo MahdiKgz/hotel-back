@@ -21,6 +21,20 @@ const createHotelValidator = yup.object().shape({
     .required("manager_id should be provided."),
 });
 
+const updateHotelValidator = yup.object().shape({
+  name: yup.string().max(40),
+  slug: yup.string().max(30),
+  country: yup.number().integer().positive(),
+  city: yup.number().integer().positive(),
+  address: yup.string(),
+  postalCode: yup.string(),
+  stars: yup.string(),
+  metroAccess: yup.string(),
+  description: yup.string(),
+  manager_id: yup.number().integer().positive(),
+});
+
 module.exports = {
   createHotelValidator,
+  updateHotelValidator,
 };
