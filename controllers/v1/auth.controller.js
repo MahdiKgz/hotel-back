@@ -190,3 +190,11 @@ exports.resetPassword = async (req, res, next) => {
 };
 
 // ُ‌ TODO : handle forget-password implementation
+exports.getMe = async (req, res, next) => {
+  try {
+    const user = req.user;
+    return successResponse(res, 200, "", { user });
+  } catch (err) {
+    next(err);
+  }
+};

@@ -17,6 +17,16 @@ const auth = async (req, res, next) => {
         phone,
       },
       raw: true,
+      attributes: [
+        "id",
+        "fullName",
+        "phone",
+        "email",
+        "role",
+        "avatar",
+        "address",
+        "bio",
+      ],
     });
     if (user === null) {
       return errorResponse(res, 400, "User not found !!");
