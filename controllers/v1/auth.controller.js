@@ -76,8 +76,6 @@ exports.sendOTP = async (req, res, next) => {
       },
     });
 
-    console.log("user => ", user);
-
     if (user === null) {
       return errorResponse(res, 404, "User not found !!");
     }

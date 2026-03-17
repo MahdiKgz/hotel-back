@@ -3,7 +3,6 @@ const { errorResponse } = require("../utils/responses");
 const User = require("../models/v1/User.model");
 
 const auth = async (req, res, next) => {
-  console.log(req.headers);
   try {
     const authHeader = req.headers["authorization"];
     if (!authHeader) {
