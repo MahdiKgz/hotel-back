@@ -83,7 +83,7 @@ exports.sendOTP = async (req, res, next) => {
     const { expired, remainingTime } = await getOtpDetails(phone);
 
     if (!expired) {
-      return successResponse(res, 200, {
+      return successResponse(res, 400, {
         message: `OTP already sent, Please try again after ${remainingTime}`,
       });
     }
