@@ -7,7 +7,10 @@ const {
   getOtpRedisPattern,
 } = require("../../utils/auth");
 const { errorResponse, successResponse } = require("../../utils/responses");
-const { registerValidator } = require("../../validators/auth.validator");
+const {
+  registerValidator,
+  updateValidator,
+} = require("../../validators/auth.validator");
 
 const bcrypt = require("bcryptjs");
 
@@ -143,7 +146,8 @@ exports.verifyOTP = async (req, res, next) => {
 
 exports.resetPassword = async (req, res, next) => {
   try {
-    const { phone, password, newPassword, confirmNewPassword } = req.body;
+    const { phone } = req.user;
+    const { password, newPassword, confirmNewPassword } = req.body;
 
     const user = await User.findOne({
       where: {
@@ -211,6 +215,30 @@ exports.setAvatar = async (req, res, next) => {
       201,
       "User avatar has been set successfully !!",
     );
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const { phone } = req.user;
+
+    console.log(req.body);
+    await updateValidator.validate(req.body, { abortEarly: false });
+    const user = await User.findOne({
+      where: {
+        phone,
+      },
+    });
+
+    if (user === null) {
+      return errorResponse(res, 404, "User NOT found !!");
+    }
+
+    await User.update({ ...req.body }, { where: { phone } });
+
+    return successResponse(res, 200, "User updated successfully !!");
   } catch (err) {
     next(err);
   }

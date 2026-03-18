@@ -9,6 +9,7 @@ const {
   resetPassword,
   getMe,
   setAvatar,
+  updateProfile,
 } = require("../../controllers/v1/auth.controller");
 const auth = require("../../middlewares/auth");
 
@@ -24,5 +25,6 @@ authRouter.route("/reset-password").post(auth, resetPassword);
 authRouter.route("/me").get(auth, getMe);
 
 authRouter.route("/avatar").post(auth, upload.single("avatar"), setAvatar);
+authRouter.route("/update-profile").put(auth, updateProfile);
 
 module.exports = authRouter;
