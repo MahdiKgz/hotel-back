@@ -5,10 +5,14 @@ const {
   create,
   remove,
   update,
+  getAll,
 } = require("../../controllers/v1/domain.controller");
 const domainRouter = express.Router();
 
-domainRouter.route("/amenity").post(auth, roleGuard("ADMIN"), create);
+domainRouter
+  .route("/amenity")
+  .post(auth, roleGuard("ADMIN"), create)
+  .get(auth, roleGuard("ADMIN"), getAll);
 domainRouter
   .route("/amenity/:amenityId")
   .put(auth, roleGuard("ADMIN"), update)

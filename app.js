@@ -12,6 +12,13 @@ app.use(morgan("dev"));
 
 app.use(cors());
 
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./swagger");
+
+//api docs
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 const authRouter = require("./routers/v1/auth.router");
 const hotelRouter = require("./routers/v1/hotel.router");
 const domainRouter = require("./routers/v1/domain.router");

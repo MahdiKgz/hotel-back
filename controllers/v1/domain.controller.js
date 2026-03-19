@@ -67,3 +67,18 @@ exports.remove = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getAll = async (req, res, next) => {
+  try {
+    const amenities = await Amenity.findAll({
+      attributes: ["id", "title", "description", "isActive"],
+    });
+    if (amenities === null) {
+      return errorResponse(res, 404, "Could not find any Amenities.");
+    }
+
+    return successResponse(res, 200, "", { amenities });
+  } catch (err) {
+    next(err);
+  }
+};
