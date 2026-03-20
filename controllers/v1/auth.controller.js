@@ -14,6 +14,7 @@ const {
 } = require("../../validators/auth.validator");
 
 const bcrypt = require("bcryptjs");
+const Ban = require("../../models/v1/Ban.model");
 
 exports.register = async (req, res, next) => {
   try {
@@ -45,6 +46,15 @@ exports.register = async (req, res, next) => {
 exports.login = async (req, res, next) => {
   try {
     const { phone, password } = req.body;
+
+    const isBanned = await Ban.findOne({
+      where: { phone },
+    });
+
+    if (isBanned !== null) {
+      return errorResponse(res, 400, "You are banned.");
+    }
+
     const existingUser = await User.findOne({ phone });
 
     if (existingUser === null) {
@@ -73,6 +83,14 @@ exports.login = async (req, res, next) => {
 exports.sendOTP = async (req, res, next) => {
   try {
     const { phone } = req.body;
+
+    const isBanned = await Ban.findOne({
+      where: { phone },
+    });
+
+    if (isBanned !== null) {
+      return errorResponse(res, 400, "You are banned.");
+    }
 
     const user = await User.findOne({
       where: {
