@@ -22,11 +22,13 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 const authRouter = require("./routers/v1/auth.router");
 const hotelRouter = require("./routers/v1/hotel.router");
 const domainRouter = require("./routers/v1/domain.router");
+const usersRouter = require("./routers/v1/user.router");
 
 // Routers
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/hotel", hotelRouter);
 app.use("/api/v1/domain", domainRouter);
+app.use("/api/v1/users", usersRouter);
 
 module.exports = app;

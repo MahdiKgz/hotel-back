@@ -8,7 +8,6 @@ const registerValidator = yup.object().shape({
   address: yup.string(),
   avatar: yup.string(),
   bio: yup.string(),
-  role: yup.string().required("Role is required"),
 });
 
 const updateValidator = yup.object().shape({
@@ -18,7 +17,6 @@ const updateValidator = yup.object().shape({
   address: yup.string(),
   avatar: yup.string(),
   bio: yup.string(),
-  role: yup.string().required("Role is required"),
 });
 module.exports = {
   registerValidator,
