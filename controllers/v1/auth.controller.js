@@ -1,3 +1,4 @@
+const fs = require("fs");
 const User = require("../../models/v1/User.model");
 const redis = require("../../redis");
 const {
@@ -29,7 +30,7 @@ exports.register = async (req, res, next) => {
     }
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    await User.create({ ...req.body, password: hashedPassword });
+    await User.create({ ...req.body, role: "GUEST", password: hashedPassword });
 
     const token = generateToken({ phone });
     return successResponse(res, 201, "User created successfully !!", {
@@ -209,6 +210,17 @@ exports.setAvatar = async (req, res, next) => {
       return errorResponse(res, 400, "avatar has not been uploaded !!");
     }
     const { path } = req.file;
+
+    const { avatar } = await User.findOne({
+      where: {
+        phone,
+      },
+      raw: true,
+    });
+
+    if (avatar !== null) {
+      fs.unlink(avatar, (err) => next(err));
+    }
     await User.update({ avatar: path }, { where: { phone } });
     return successResponse(
       res,
