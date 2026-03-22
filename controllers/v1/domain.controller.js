@@ -1,4 +1,5 @@
 const Amenity = require("../../models/v1/Amenity.model");
+const Province = require("../../models/v1/Province.model");
 const User = require("../../models/v1/User.model");
 const { errorResponse, successResponse } = require("../../utils/responses");
 const {
@@ -102,9 +103,22 @@ exports.getManagers = async (req, res, next) => {
       label: manager.fullName,
     }));
 
-    console.log("managersOptions", managersOptions);
-
     return successResponse(res, 200, "", { managersOptions });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getCities = async (req, res, next) => {
+  try {
+    const provinces = await Province.findAll({ raw: true });
+
+    const provincesOptions = provinces?.map((province) => ({
+      value: province.id,
+      label: province.name,
+    }));
+
+    return successResponse(res, 200, "", { provincesOptions });
   } catch (err) {
     next(err);
   }

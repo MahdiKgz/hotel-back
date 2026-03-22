@@ -7,7 +7,8 @@ const dbConfigs = new Sequelize({
   password: process.env.MYSQL_DATABASE_PASSWORD || "",
   dialect: "mysql",
 
-  logging: process.env.NODE_ENV === "production" ? false : console.log,
+  // logging: process.env.NODE_ENV === "production" ? false : console.log,
+  logging: false,
 });
 
 dbConfigs

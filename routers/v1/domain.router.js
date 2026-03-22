@@ -7,6 +7,7 @@ const {
   update,
   getAll,
   getManagers,
+  getCities,
 } = require("../../controllers/v1/domain.controller");
 const domainRouter = express.Router();
 
@@ -20,5 +21,6 @@ domainRouter
   .delete(auth, roleGuard("ADMIN"), remove);
 
 domainRouter.route("/managers").get(auth, roleGuard("ADMIN"), getManagers);
+domainRouter.route("/cities").get(getCities);
 
 module.exports = domainRouter;
