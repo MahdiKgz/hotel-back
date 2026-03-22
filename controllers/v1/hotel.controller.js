@@ -9,7 +9,7 @@ const {
 
 exports.create = async (req, res, next) => {
   try {
-    const { slug } = req.body;
+    let { slug, manager_id } = req.body;
     await createHotelValidator.validate(
       { ...req.body, manager_id: req.user.id },
       { abortEarly: false },
@@ -25,8 +25,28 @@ exports.create = async (req, res, next) => {
       return errorResponse(res, 400, "Hotel already exists");
     }
 
-    await Hotel.create({ ...req.body, manager_id: req.user.id });
+    if (!manager_id) {
+      manager_id = req.user.id;
+    }
+
+    await Hotel.create({ ...req.body, manager_id });
     return successResponse(res, 201, "Hotel Created successfully !!");
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAll = async (req, res, next) => {
+  try {
+    const hotels = await Hotel.findAll({
+      attributes: ["id", "name", "slug", "stars"],
+    });
+
+    if (hotels === null) {
+      return errorResponse(res, 404, "NO hotel found !!");
+    }
+
+    return successResponse(res, 200, "", { hotels });
   } catch (err) {
     next(err);
   }

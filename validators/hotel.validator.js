@@ -14,11 +14,7 @@ const createHotelValidator = yup.object().shape({
   stars: yup.string().required("stars count is required."),
   metroAccess: yup.string(),
   description: yup.string(),
-  manager_id: yup
-    .number()
-    .integer()
-    .positive()
-    .required("manager_id should be provided."),
+  manager_id: yup.number().integer().positive().nullable(),
 });
 
 const updateHotelValidator = yup.object().shape({
