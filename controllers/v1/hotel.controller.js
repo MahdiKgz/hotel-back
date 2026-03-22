@@ -1,6 +1,5 @@
 const Hotel = require("../../models/v1/Hotel.model");
 const HotelImage = require("../../models/v1/HotelImages.model");
-const Room = require("../../models/v1/Room.model");
 const User = require("../../models/v1/User.model");
 const { errorResponse, successResponse } = require("../../utils/responses");
 const {

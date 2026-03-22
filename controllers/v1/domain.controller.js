@@ -1,4 +1,5 @@
 const Amenity = require("../../models/v1/Amenity.model");
+const User = require("../../models/v1/User.model");
 const { errorResponse, successResponse } = require("../../utils/responses");
 const {
   createAmenityValidator,
@@ -78,6 +79,32 @@ exports.getAll = async (req, res, next) => {
     }
 
     return successResponse(res, 200, "", { amenities });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getManagers = async (req, res, next) => {
+  try {
+    const managers = await User.findAll({
+      where: {
+        role: "MANAGER",
+      },
+      raw: true,
+    });
+
+    if (managers === null) {
+      return errorResponse(res, 404, "No Managers found !!");
+    }
+
+    const managersOptions = managers.map((manager) => ({
+      value: manager.id,
+      label: manager.fullName,
+    }));
+
+    console.log("managersOptions", managersOptions);
+
+    return successResponse(res, 200, "", { managersOptions });
   } catch (err) {
     next(err);
   }

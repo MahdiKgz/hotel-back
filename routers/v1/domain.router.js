@@ -6,6 +6,7 @@ const {
   remove,
   update,
   getAll,
+  getManagers,
 } = require("../../controllers/v1/domain.controller");
 const domainRouter = express.Router();
 
@@ -17,5 +18,7 @@ domainRouter
   .route("/amenity/:amenityId")
   .put(auth, roleGuard("ADMIN"), update)
   .delete(auth, roleGuard("ADMIN"), remove);
+
+domainRouter.route("/managers").get(auth, roleGuard("ADMIN"), getManagers);
 
 module.exports = domainRouter;
