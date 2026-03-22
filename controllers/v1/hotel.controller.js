@@ -23,23 +23,18 @@ exports.create = async (req, res, next) => {
 
     const isAlreadyExistsWithManager = await Hotel.findOne({
       where: {
-        manager_id,
+        manager_id: manager_id ?? req.user.id,
       },
     });
 
     if (isAlreadyExistsWithManager !== null) {
       errorResponse(res, 400, "manager already has one active hotel.");
     }
-    console.log("isAlreadyExistsWithManager", isAlreadyExistsWithManager);
     if (hotel !== null) {
       return errorResponse(res, 400, "Hotel already exists");
     }
 
-    if (!manager_id) {
-      manager_id = req.user.id;
-    }
-
-    await Hotel.create({ ...req.body, manager_id });
+    await Hotel.create({ ...req.body, manager_id: manager_id ?? req.user.id });
     return successResponse(res, 201, "Hotel Created successfully !!");
   } catch (err) {
     next(err);
