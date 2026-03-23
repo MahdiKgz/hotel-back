@@ -23,6 +23,7 @@ const authRouter = require("./routers/v1/auth.router");
 const hotelRouter = require("./routers/v1/hotel.router");
 const domainRouter = require("./routers/v1/domain.router");
 const usersRouter = require("./routers/v1/user.router");
+const roomRouter = require("./routers/v1/room.router");
 
 // Routers
 
@@ -30,5 +31,6 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/hotel", hotelRouter);
 app.use("/api/v1/domain", domainRouter);
 app.use("/api/v1/users", usersRouter);
+app.use("/api/v1/room", roomRouter);
 
 module.exports = app;

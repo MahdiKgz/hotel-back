@@ -41,6 +41,8 @@ hotelRouter
     setImages,
   );
 
-hotelRouter.route("/:hotelId/rooms").get(getRooms);
+hotelRouter
+  .route("/:hotelId/rooms")
+  .get(auth, roleGuard("ADMIN,MANAGER"), getRooms);
 
 module.exports = hotelRouter;
