@@ -1,5 +1,6 @@
 const Hotel = require("../../models/v1/Hotel.model");
 const HotelImage = require("../../models/v1/HotelImages.model");
+const Room = require("../../models/v1/Room.model");
 const User = require("../../models/v1/User.model");
 const { errorResponse, successResponse } = require("../../utils/responses");
 const {
@@ -183,6 +184,21 @@ exports.setImages = async (req, res, next) => {
       201,
       "Images have been uploaded successfully !!",
     );
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getRooms = async (req, res, next) => {
+  try {
+    const { hotelId } = req.params;
+    const rooms = await Room.findAll({
+      where: {
+        hotel_id: hotelId,
+      },
+    });
+
+    return successResponse(res, 200, "", { rooms });
   } catch (err) {
     next(err);
   }

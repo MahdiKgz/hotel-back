@@ -3,6 +3,7 @@ require("./redis");
 
 const app = require("./app");
 const db = require("./configs/db");
+const Province = require("./models/v1/Province.model");
 const seedProvinces = require("./utils/seedProvinces");
 
 async function initServer() {
@@ -21,6 +22,7 @@ async function initServer() {
 
 async function run() {
   db.sync({ alter: true });
+  await Province.sync({ alter: true });
   await seedProvinces();
   await initServer();
 }

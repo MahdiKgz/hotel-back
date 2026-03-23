@@ -9,6 +9,7 @@ const {
   setCover,
   setImages,
   getAll,
+  getRooms,
 } = require("../../controllers/v1/hotel.controller");
 
 const auth = require("../../middlewares/auth");
@@ -39,5 +40,7 @@ hotelRouter
     upload.array("images", 10),
     setImages,
   );
+
+hotelRouter.route("/:hotelId/rooms").get(getRooms);
 
 module.exports = hotelRouter;
