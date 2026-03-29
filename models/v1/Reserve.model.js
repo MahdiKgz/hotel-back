@@ -52,9 +52,21 @@ const Reserve = db.define("Reserve", {
   },
 });
 
-Reserve.belongsTo(Hotel, { foreignKey: "hotelId", as: "hotel" });
-Reserve.belongsTo(User, { foreignKey: "userId", as: "user" });
-Reserve.belongsTo(Room, { foreignKey: "roomId", as: "room" });
+Reserve.belongsTo(Hotel, {
+  foreignKey: "hotelId",
+  as: "hotel",
+  onDelete: "CASCADE",
+});
+Reserve.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
+  onDelete: "CASCADE",
+});
+Reserve.belongsTo(Room, {
+  foreignKey: "roomId",
+  as: "room",
+  onDelete: "CASCADE",
+});
 
 User.belongsToMany(Room, {
   through: Reserve,

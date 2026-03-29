@@ -24,6 +24,7 @@ exports.createReserve = async (req, res, next) => {
     }
 
     await Reserve.create(req.body);
+    await Room.update({ status: "RESERVED" }, { where: { id: roomId } });
     return successResponse(res, 201, "اتاق با موفقیت رزرو شد");
   } catch (err) {
     next(err);
@@ -33,8 +34,6 @@ exports.createReserve = async (req, res, next) => {
 exports.getOneHotelReserves = async (req, res, next) => {
   try {
     const { hotelId } = req.params;
-
-    console.log(hotelId);
 
     const reserves = await Reserve.findAll({
       where: {
