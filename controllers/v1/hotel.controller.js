@@ -8,6 +8,8 @@ const {
   updateHotelValidator,
 } = require("../../validators/hotel.validator");
 
+const fs = require("fs");
+
 exports.create = async (req, res, next) => {
   try {
     let { slug, manager_id } = req.body;
@@ -142,10 +144,21 @@ exports.setCover = async (req, res, next) => {
 
     const { path } = req.file;
 
+    const { cover } = await Hotel.findOne({
+      where: { slug },
+      raw: true,
+    });
+
+    if (cover !== null) {
+      fs.unlink(cover, (err) => next(err));
+    }
+
     await Hotel.update({ cover: path }, { where: { slug } });
 
     return successResponse(res, 200, "Cover has been set successfully !!");
-  } catch (err) {}
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.setImages = async (req, res, next) => {
@@ -176,6 +189,14 @@ exports.setImages = async (req, res, next) => {
       isCover: false,
       hotel_id: hotel.id,
     }));
+
+    const hasImages = await HotelImage.findAll({
+      where: { hotel_id: hotel.id },
+    });
+
+    if (!hasImages.length) {
+      hasImages.map(({ url }) => fs.unlink(url, (err) => next(err)));
+    }
 
     await HotelImage.bulkCreate(images);
 
