@@ -29,11 +29,6 @@ const HotelAmenity = db.define(
       onDelete: "CASCADE",
       field: "amenity_id",
     },
-    isActive: {
-      type: BOOLEAN,
-      allowNull: false,
-      defaultValue: true,
-    },
   },
   {
     tableName: "hotel_amenities",
