@@ -73,3 +73,15 @@ exports.getOneHotelReserves = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.cancelReserve = async (req, res, next) => {
+  try {
+    const { roomId } = req.params;
+    await Reserve.destroy({ where: { room_id: roomId } });
+    await Room.update({ status: "EMPTY" }, { where: { id: roomId } });
+
+    return successResponse(res, 200, "رزرو لغو شد.");
+  } catch (err) {
+    next(err);
+  }
+};
