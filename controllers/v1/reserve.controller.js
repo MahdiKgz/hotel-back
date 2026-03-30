@@ -9,7 +9,8 @@ const {
 
 exports.createReserve = async (req, res, next) => {
   try {
-    const { roomId } = req.body;
+    const { roomId, hotelId, startDate, endDate, note } = req.body;
+    const { id } = req.user;
     await createReservationValidator.validate(req.body, { abortEarly: false });
 
     const hasReserved = await Reserve.findOne({
@@ -23,7 +24,14 @@ exports.createReserve = async (req, res, next) => {
       return errorResponse(res, 404, "اتاق در حال حاضر رزرو است.");
     }
 
-    await Reserve.create(req.body);
+    await Reserve.create({
+      roomId,
+      hotelId,
+      userId: id,
+      startDate,
+      endDate,
+      note,
+    });
     await Room.update({ status: "RESERVED" }, { where: { id: roomId } });
     return successResponse(res, 201, "اتاق با موفقیت رزرو شد");
   } catch (err) {
