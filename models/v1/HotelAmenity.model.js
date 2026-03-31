@@ -31,9 +31,6 @@ const HotelAmenity = db.define(
     },
   },
   {
-    tableName: "hotel_amenities",
-    paranoid: true,
-    deletedAt: "deleted_at",
     timestamps: true,
   },
 );

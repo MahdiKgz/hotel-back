@@ -1,4 +1,5 @@
 const Hotel = require("../../models/v1/Hotel.model");
+const HotelAmenity = require("../../models/v1/HotelAmenity.model");
 const HotelImage = require("../../models/v1/HotelImages.model");
 const Room = require("../../models/v1/Room.model");
 const User = require("../../models/v1/User.model");
@@ -220,6 +221,23 @@ exports.getRooms = async (req, res, next) => {
     });
 
     return successResponse(res, 200, "", { rooms });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.addAmenityToHotel = async (req, res, next) => {
+  try {
+    const { hotelId } = req.params;
+    const { amenities } = req.body;
+
+    const bulkAmenities = amenities.map((amenity) => ({
+      hotelId: +hotelId,
+      amenityId: amenity,
+    }));
+
+    await HotelAmenity.bulkCreate(bulkAmenities);
+    return successResponse(res, 201, "امکانات با موفقیت افزوده شدند.");
   } catch (err) {
     next(err);
   }

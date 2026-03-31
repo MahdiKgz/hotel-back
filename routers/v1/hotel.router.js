@@ -10,6 +10,7 @@ const {
   setImages,
   getAll,
   getRooms,
+  addAmenityToHotel,
 } = require("../../controllers/v1/hotel.controller");
 
 const auth = require("../../middlewares/auth");
@@ -40,6 +41,10 @@ hotelRouter
     upload.array("images", 10),
     setImages,
   );
+
+hotelRouter
+  .route("/:hotelId/amenity")
+  .post(auth, roleGuard("ADMIN,MANAGER"), addAmenityToHotel);
 
 hotelRouter
   .route("/:hotelId/rooms")
