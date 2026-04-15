@@ -1,3 +1,4 @@
+const Amenity = require("../../models/v1/Amenity.model");
 const Hotel = require("../../models/v1/Hotel.model");
 const HotelAmenity = require("../../models/v1/HotelAmenity.model");
 const HotelImage = require("../../models/v1/HotelImages.model");
@@ -231,13 +232,44 @@ exports.addAmenityToHotel = async (req, res, next) => {
     const { hotelId } = req.params;
     const { amenities } = req.body;
 
+    await HotelAmenity.destroy({
+      where: { hotel_id: hotelId },
+    });
+
     const bulkAmenities = amenities.map((amenity) => ({
-      hotelId: +hotelId,
-      amenityId: amenity,
+      hotel_id: +hotelId,
+      amenity_id: amenity,
     }));
 
     await HotelAmenity.bulkCreate(bulkAmenities);
+
     return successResponse(res, 201, "امکانات با موفقیت افزوده شدند.");
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getHotelAmenity = async (req, res, next) => {
+  try {
+    const { hotelId } = req.params;
+
+    const hotel = await Hotel.findOne({
+      where: { id: hotelId },
+      include: [
+        {
+          model: Amenity,
+          as: "amenities",
+          through: { attributes: [] },
+          attributes: ["id", "title", "isActive", "description"],
+        },
+      ],
+    });
+
+    if (!hotel || !hotel.amenities.length) {
+      return errorResponse(res, 400, "برای این هتل امکاناتی ثبت نشده است");
+    }
+
+    return successResponse(res, 200, "", { amenities: hotel.amenities });
   } catch (err) {
     next(err);
   }

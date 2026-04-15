@@ -26,4 +26,5 @@ const Amenity = db.define(
   { paranoid: true, deletedAt: "deleted_at" },
 );
 
+
 module.exports = Amenity;

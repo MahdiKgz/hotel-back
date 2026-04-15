@@ -11,6 +11,7 @@ const {
   getAll,
   getRooms,
   addAmenityToHotel,
+  getHotelAmenity,
 } = require("../../controllers/v1/hotel.controller");
 
 const auth = require("../../middlewares/auth");
@@ -44,7 +45,8 @@ hotelRouter
 
 hotelRouter
   .route("/:hotelId/amenity")
-  .post(auth, roleGuard("ADMIN,MANAGER"), addAmenityToHotel);
+  .post(auth, roleGuard("ADMIN,MANAGER"), addAmenityToHotel)
+  .get(auth, roleGuard("ADMIN,MANAGER"), getHotelAmenity);
 
 hotelRouter
   .route("/:hotelId/rooms")

@@ -50,3 +50,13 @@ Amenity.belongsToMany(Hotel, {
   foreignKey: "amenity_id",
   otherKey: "hotel_id",
 });
+
+HotelAmenity.belongsTo(Amenity, {
+  foreignKey: "amenity_id",
+  as: "amenity",
+});
+
+HotelAmenity.belongsTo(Hotel, {
+  foreignKey: "hotel_id",
+  as: "hotel",
+});
