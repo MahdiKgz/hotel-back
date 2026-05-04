@@ -12,6 +12,9 @@ const {
   getRooms,
   addAmenityToHotel,
   getHotelAmenity,
+  deleteOneAmenity,
+  createHotelGeometry,
+  getHotelGeometry,
 } = require("../../controllers/v1/hotel.controller");
 
 const auth = require("../../middlewares/auth");
@@ -49,7 +52,16 @@ hotelRouter
   .get(auth, roleGuard("ADMIN,MANAGER"), getHotelAmenity);
 
 hotelRouter
+  .route("/:hotelId/amenity/:amenityId")
+  .delete(auth, roleGuard("ADMIN,MANAGER"), deleteOneAmenity);
+
+hotelRouter
   .route("/:hotelId/rooms")
   .get(auth, roleGuard("ADMIN,MANAGER"), getRooms);
+
+hotelRouter
+  .route("/:hotelId/geometry")
+  .post(auth, roleGuard("ADMIN,MANAGER"), createHotelGeometry)
+  .get(getHotelGeometry);
 
 module.exports = hotelRouter;

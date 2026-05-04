@@ -1,3 +1,4 @@
+const { where } = require("sequelize");
 const Amenity = require("../../models/v1/Amenity.model");
 const Hotel = require("../../models/v1/Hotel.model");
 const HotelAmenity = require("../../models/v1/HotelAmenity.model");
@@ -49,7 +50,7 @@ exports.create = async (req, res, next) => {
 exports.getAll = async (req, res, next) => {
   try {
     const hotels = await Hotel.findAll({
-      attributes: ["id", "name", "slug", "stars"],
+      attributes: ["id", "name", "slug", "stars", "geometry"],
     });
 
     if (hotels === null) {
@@ -270,6 +271,55 @@ exports.getHotelAmenity = async (req, res, next) => {
     }
 
     return successResponse(res, 200, "", { amenities: hotel.amenities });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteOneAmenity = async (req, res, next) => {
+  try {
+    const { hotelId, amenityId } = req.params;
+    await Amenity.destroy({
+      where: {
+        hotel_id: +hotelId,
+        amenity_id: +amenityId,
+      },
+    });
+
+    return successResponse(res, 200, "امکانات با موفقیت از این هتل حذف شد.");
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.createHotelGeometry = async (req, res, next) => {
+  try {
+    const { hotelId } = req.params;
+
+    const hotel = await Hotel.findOne({ where: { id: hotelId } });
+
+    if (hotel === null) {
+      return errorResponse(res, 404, "هتل یافت نشد");
+    }
+
+    await hotel.update({ geometry: req.body }, { where: { id: hotelId } });
+    return successResponse(res, 200, "موقعیت جغرافیایی با موفقیت ثبت شد.");
+  } catch (err) {
+    next();
+  }
+};
+
+exports.getHotelGeometry = async (req, res, next) => {
+  try {
+    const { hotelId } = req.params;
+
+    const hotel = await Hotel.findOne({ where: { id: hotelId }, raw: true });
+
+    if (hotel === null) {
+      return errorResponse(res, 404, "هتل یافت نشد.");
+    }
+
+    return successResponse(res, 200, "", { ...hotel.geometry });
   } catch (err) {
     next(err);
   }

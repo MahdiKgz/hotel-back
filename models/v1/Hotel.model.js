@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const db = require("../../configs/db");
 const User = require("./User.model");
 
-const { STRING, ENUM, INTEGER, TEXT, JSONB } = DataTypes;
+const { STRING, ENUM, INTEGER, TEXT, GEOMETRY } = DataTypes;
 
 const Hotel = db.define(
   "Hotel",
@@ -43,8 +43,8 @@ const Hotel = db.define(
       type: ENUM("1", "2", "3", "4", "5"),
       allowNull: false,
     },
-    coordinates: {
-      type: DataTypes.JSON,
+    geometry: {
+      type: DataTypes.GEOMETRY("POINT"),
       allowNull: true,
       defaultValue: null,
     },

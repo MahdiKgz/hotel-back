@@ -21,10 +21,15 @@ async function initServer() {
 }
 
 async function run() {
-  db.sync({ alter: true });
-  await Province.sync({ alter: true });
-  await seedProvinces();
-  await initServer();
+  try {
+    db.sync({ alter: true });
+    await Province.sync({ force: true });
+    await seedProvinces();
+    await initServer();
+  } catch {
+    db.sync({ force: true });
+    Province.sync({ force: true });
+  }
 }
 
 run();
