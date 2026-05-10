@@ -25,6 +25,7 @@ const domainRouter = require("./routers/v1/domain.router");
 const usersRouter = require("./routers/v1/user.router");
 const roomRouter = require("./routers/v1/room.router");
 const reserveRouter = require("./routers/v1/reserve.router");
+const statsRouter = require("./routers/v1/stats.router");
 
 // Routers
 
@@ -34,5 +35,6 @@ app.use("/api/v1/domain", domainRouter);
 app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/room", roomRouter);
 app.use("/api/v1/reserve", reserveRouter);
+app.use("/api/v1/stats", statsRouter);
 
 module.exports = app;

@@ -18,6 +18,7 @@ const swaggerSpec = {
     { name: "Users" },
     { name: "Rooms" },
     { name: "Reserves" },
+    { name: "Stats" },
   ],
   components: {
     securitySchemes: {
@@ -214,6 +215,32 @@ const swaggerSpec = {
           success: { type: "boolean", example: false },
           statusCode: { type: "integer", example: 400 },
           message: { type: "string", example: "Bad request" },
+        },
+      },
+      StatsResponse: {
+        type: "object",
+        properties: {
+          totalHotels: { type: "integer", example: 12 },
+          totalRooms: { type: "integer", example: 180 },
+          totalReserves: { type: "integer", example: 920 },
+          reservesInRange: { type: "integer", example: 35 },
+          dateRange: {
+            type: "object",
+            properties: {
+              from: { type: "string", format: "date", example: "2026-01-01" },
+              to: { type: "string", format: "date", example: "2026-05-10" },
+            },
+          },
+          reservesTimeline: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                date: { type: "string", format: "date", example: "2026-05-01" },
+                count: { type: "integer", example: 6 },
+              },
+            },
+          },
         },
       },
     },
@@ -872,6 +899,52 @@ const swaggerSpec = {
           },
         ],
         responses: { 200: { description: "Cancelled" } },
+      },
+    },
+    "/api/v1/stats": {
+      get: {
+        tags: ["Stats"],
+        summary: "Get admin dashboard stats",
+        description:
+          "Returns total hotels, rooms, all reserves, and reserve timeline. If from/to are not provided, range defaults to first reserve startDate up to today.",
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: "from",
+            in: "query",
+            required: false,
+            schema: { type: "string", format: "date" },
+            description: "Start date (YYYY-MM-DD). Default: first reserve startDate.",
+          },
+          {
+            name: "to",
+            in: "query",
+            required: false,
+            schema: { type: "string", format: "date" },
+            description: "End date (YYYY-MM-DD). Default: today.",
+          },
+        ],
+        responses: {
+          200: {
+            description: "OK",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string" },
+                    data: { $ref: "#/components/schemas/StatsResponse" },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description:
+              "Invalid date range/date format or role access error (ADMIN only)",
+          },
+          401: { description: "Unauthorized" },
+        },
       },
     },
   },
