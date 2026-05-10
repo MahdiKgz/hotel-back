@@ -279,7 +279,28 @@ exports.getHotelAmenity = async (req, res, next) => {
 exports.deleteOneAmenity = async (req, res, next) => {
   try {
     const { hotelId, amenityId } = req.params;
-    await Amenity.destroy({
+
+    const hotel = await Hotel.findOne({ where: { id: +hotelId } });
+    if (hotel === null) {
+      return errorResponse(res, 404, "هتل یافت نشد.");
+    }
+
+    const amenity = await Amenity.findOne({ where: { id: +amenityId } });
+    if (amenity === null) {
+      return errorResponse(res, 404, "امکانات موردنظر یافت نشد.");
+    }
+
+    const hotelAmenity = await HotelAmenity.findOne({
+      where: {
+        hotel_id: +hotelId,
+        amenity_id: +amenityId,
+      },
+    });
+    if (hotelAmenity === null) {
+      return errorResponse(res, 404, "این امکان برای هتل ثبت نشده است.");
+    }
+
+    await HotelAmenity.destroy({
       where: {
         hotel_id: +hotelId,
         amenity_id: +amenityId,
