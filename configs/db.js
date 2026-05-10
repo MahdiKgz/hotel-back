@@ -4,7 +4,7 @@ const dbConfigs = new Sequelize({
   database: process.env.MYSQL_DATABASE_NAME,
   host: process.env.MYSQL_HOST,
   username: process.env.MYSQL_USERNAME,
-  password: process.env.MYSQL_DATABASE_PASSWORD || "",
+  password: process.env.MYSQL_DATABASE_PASSWORD || "" ,
   dialect: "mysql",
 
   // logging: process.env.NODE_ENV === "production" ? false : console.log,
