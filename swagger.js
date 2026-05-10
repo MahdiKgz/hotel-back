@@ -551,7 +551,7 @@ const swaggerSpec = {
     "/api/v1/hotel/{hotelId}/amenity/{amenityId}": {
       delete: {
         tags: ["Hotels"],
-        summary: "Delete one amenity from hotel",
+        summary: "Remove one amenity from a hotel",
         security: [{ BearerAuth: [] }],
         parameters: [
           {
@@ -567,7 +567,13 @@ const swaggerSpec = {
             schema: { type: "integer" },
           },
         ],
-        responses: { 200: { description: "Deleted" } },
+        responses: {
+          200: { description: "Amenity removed from hotel" },
+          404: {
+            description:
+              "Hotel not found, amenity not found, or amenity is not assigned to this hotel",
+          },
+        },
       },
     },
     "/api/v1/hotel/{hotelId}/rooms": {

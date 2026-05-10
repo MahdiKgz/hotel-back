@@ -41,7 +41,7 @@ hotelRouter
   .route("/:slug/images")
   .post(
     auth,
-    roleGuard("ADMIN<MANAGER"),
+    roleGuard("ADMIN,MANAGER"),
     upload.array("images", 10),
     setImages,
   );
