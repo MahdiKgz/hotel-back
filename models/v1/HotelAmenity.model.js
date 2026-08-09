@@ -32,6 +32,12 @@ const HotelAmenity = db.define(
   },
   {
     timestamps: true,
+    indexes: [
+      {
+        unique: true,
+        fields: ["hotel_id", "amenity_id"],
+      },
+    ],
   },
 );
 
@@ -40,23 +46,23 @@ module.exports = HotelAmenity;
 Hotel.belongsToMany(Amenity, {
   through: HotelAmenity,
   as: "amenities",
-  foreignKey: "hotel_id",
-  otherKey: "amenity_id",
+  foreignKey: { name: "hotelId", field: "hotel_id" },
+  otherKey: { name: "amenityId", field: "amenity_id" },
 });
 
 Amenity.belongsToMany(Hotel, {
   through: HotelAmenity,
   as: "hotels",
-  foreignKey: "amenity_id",
-  otherKey: "hotel_id",
+  foreignKey: { name: "amenityId", field: "amenity_id" },
+  otherKey: { name: "hotelId", field: "hotel_id" },
 });
 
 HotelAmenity.belongsTo(Amenity, {
-  foreignKey: "amenity_id",
+  foreignKey: { name: "amenityId", field: "amenity_id" },
   as: "amenity",
 });
 
 HotelAmenity.belongsTo(Hotel, {
-  foreignKey: "hotel_id",
+  foreignKey: { name: "hotelId", field: "hotel_id" },
   as: "hotel",
 });

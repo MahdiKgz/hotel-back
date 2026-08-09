@@ -19,6 +19,7 @@ const swaggerSpec = {
     { name: "Rooms" },
     { name: "Reserves" },
     { name: "Stats" },
+    { name: "Landing" },
   ],
   components: {
     securitySchemes: {
@@ -246,6 +247,115 @@ const swaggerSpec = {
     },
   },
   paths: {
+    "/api/v1/landing": {
+      get: {
+        tags: ["Landing"],
+        summary: "Get public landing-page overview",
+        description:
+          "Returns aggregate counts, featured hotels, and popular destinations. The response is cached in Redis.",
+        responses: { 200: { description: "OK" } },
+      },
+    },
+    "/api/v1/landing/filters": {
+      get: {
+        tags: ["Landing"],
+        summary: "Get public hotel-filter metadata",
+        description:
+          "Returns destination, amenity, star, capacity, price, metro-access, and sorting options.",
+        responses: { 200: { description: "OK" } },
+      },
+    },
+    "/api/v1/landing/hotels": {
+      get: {
+        tags: ["Landing"],
+        summary: "Search and filter public hotels",
+        description:
+          "All filters are optional. When checkIn/checkOut are supplied, rooms with overlapping reservations are excluded.",
+        parameters: [
+          {
+            name: "destination",
+            in: "query",
+            schema: { type: "string", maxLength: 100 },
+            description: "Hotel name, slug, address, or province text.",
+          },
+          {
+            name: "provinceId",
+            in: "query",
+            schema: { type: "integer", minimum: 1 },
+          },
+          {
+            name: "stars",
+            in: "query",
+            schema: { type: "string", example: "4,5" },
+          },
+          {
+            name: "amenityIds",
+            in: "query",
+            schema: { type: "string", example: "1,3,4" },
+            description: "Hotel must contain every supplied amenity.",
+          },
+          {
+            name: "minPrice",
+            in: "query",
+            schema: { type: "integer", minimum: 0 },
+          },
+          {
+            name: "maxPrice",
+            in: "query",
+            schema: { type: "integer", minimum: 0 },
+          },
+          {
+            name: "capacity",
+            in: "query",
+            schema: { type: "integer", minimum: 1, maximum: 100 },
+          },
+          {
+            name: "metroAccess",
+            in: "query",
+            schema: { type: "string", enum: ["YES", "NO"] },
+          },
+          {
+            name: "checkIn",
+            in: "query",
+            schema: { type: "string", format: "date" },
+          },
+          {
+            name: "checkOut",
+            in: "query",
+            schema: { type: "string", format: "date" },
+          },
+          {
+            name: "sort",
+            in: "query",
+            schema: {
+              type: "string",
+              enum: [
+                "recommended",
+                "price_asc",
+                "price_desc",
+                "stars_desc",
+                "newest",
+                "name_asc",
+              ],
+            },
+          },
+          {
+            name: "page",
+            in: "query",
+            schema: { type: "integer", minimum: 1, default: 1 },
+          },
+          {
+            name: "limit",
+            in: "query",
+            schema: { type: "integer", minimum: 1, maximum: 50, default: 12 },
+          },
+        ],
+        responses: {
+          200: { description: "OK" },
+          400: { description: "Invalid filter or date range" },
+        },
+      },
+    },
     "/api/v1/auth/register": {
       post: {
         tags: ["Auth"],

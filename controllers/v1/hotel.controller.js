@@ -234,12 +234,12 @@ exports.addAmenityToHotel = async (req, res, next) => {
     const { amenities } = req.body;
 
     await HotelAmenity.destroy({
-      where: { hotel_id: hotelId },
+      where: { hotelId },
     });
 
     const bulkAmenities = amenities.map((amenity) => ({
-      hotel_id: +hotelId,
-      amenity_id: amenity,
+      hotelId: +hotelId,
+      amenityId: amenity,
     }));
 
     await HotelAmenity.bulkCreate(bulkAmenities);
@@ -292,8 +292,8 @@ exports.deleteOneAmenity = async (req, res, next) => {
 
     const hotelAmenity = await HotelAmenity.findOne({
       where: {
-        hotel_id: +hotelId,
-        amenity_id: +amenityId,
+        hotelId: +hotelId,
+        amenityId: +amenityId,
       },
     });
     if (hotelAmenity === null) {
@@ -302,8 +302,8 @@ exports.deleteOneAmenity = async (req, res, next) => {
 
     await HotelAmenity.destroy({
       where: {
-        hotel_id: +hotelId,
-        amenity_id: +amenityId,
+        hotelId: +hotelId,
+        amenityId: +amenityId,
       },
     });
 

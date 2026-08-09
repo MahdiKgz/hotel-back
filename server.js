@@ -1,34 +1,43 @@
 require("dotenv").config();
-require("./redis");
 
 const app = require("./app");
-const db = require("./configs/db");
-const Province = require("./models/v1/Province.model");
-const seedProvinces = require("./utils/seedProvinces");
-
-async function initServer() {
-  try {
-    const port = process.env.PORT || 3000;
-
-    app.listen(port, () => {
-      console.log(
-        `Listening on port ${port} on ${process.env.NODE_ENV === "production" ? "production" : "development"} mode`,
-      );
-    });
-  } catch (err) {
-    throw new Error("Error while starting Server. check the logs : ", err);
-  }
-}
+const { db } = require("./models");
+const redis = require("./redis");
+const seedDatabase = require("./seeders");
 
 async function run() {
   try {
-    db.sync({ alter: true });
-    await Province.sync({ force: true });
-    await seedProvinces();
-    await initServer();
-  } catch {
-    db.sync({ force: true });
-    Province.sync({ force: true });
+    await db.authenticate();
+    console.log("Connected to MySQL successfully.");
+
+    await db.sync({
+      alter: process.env.DB_SYNC_ALTER === "true",
+    });
+
+    if (process.env.AUTO_SEED === "true") {
+      await seedDatabase({ closeConnection: false });
+    }
+
+    const port = Number(process.env.PORT || 4000);
+    const server = app.listen(port, () => {
+      console.log("Hotel API listening on http://localhost:" + port);
+      console.log("Swagger docs available at http://localhost:" + port + "/docs");
+    });
+
+    async function shutdown(signal) {
+      console.log(signal + " received. Closing connections...");
+      server.close(async () => {
+        await Promise.allSettled([db.close(), redis.quit()]);
+        process.exit(0);
+      });
+    }
+
+    process.on("SIGTERM", () => shutdown("SIGTERM"));
+    process.on("SIGINT", () => shutdown("SIGINT"));
+  } catch (error) {
+    console.error("Server startup failed:", error);
+    await Promise.allSettled([db.close(), redis.quit()]);
+    process.exitCode = 1;
   }
 }
 

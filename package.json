@@ -18,6 +18,10 @@
   },
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "node --watch server.js",
+    "infra:up": "docker compose -f ../docker-compose.yml up -d mysql redis",
+    "infra:down": "docker compose -f ../docker-compose.yml down",
+    "infra:logs": "docker compose -f ../docker-compose.yml logs -f mysql redis",
+    "seed": "node seeders/index.js"
   }
 }

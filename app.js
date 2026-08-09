@@ -26,15 +26,18 @@ const usersRouter = require("./routers/v1/user.router");
 const roomRouter = require("./routers/v1/room.router");
 const reserveRouter = require("./routers/v1/reserve.router");
 const statsRouter = require("./routers/v1/stats.router");
+const landingRouter = require("./routers/v1/landing.router");
+const invalidateLandingCache = require("./middlewares/invalidateLandingCache");
 
 // Routers
 
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/hotel", hotelRouter);
-app.use("/api/v1/domain", domainRouter);
+app.use("/api/v1/hotel", invalidateLandingCache, hotelRouter);
+app.use("/api/v1/domain", invalidateLandingCache, domainRouter);
 app.use("/api/v1/users", usersRouter);
-app.use("/api/v1/room", roomRouter);
-app.use("/api/v1/reserve", reserveRouter);
+app.use("/api/v1/room", invalidateLandingCache, roomRouter);
+app.use("/api/v1/reserve", invalidateLandingCache, reserveRouter);
 app.use("/api/v1/stats", statsRouter);
+app.use("/api/v1/landing", landingRouter);
 
 module.exports = app;
