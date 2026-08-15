@@ -7,6 +7,11 @@ const User = require("./User.model");
 const { DATEONLY, INTEGER, TEXT } = DataTypes;
 
 const Reserve = db.define("Reserve", {
+  id: {
+    type: INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
   hotelId: {
     type: INTEGER,
     allowNull: false,
@@ -69,14 +74,14 @@ Reserve.belongsTo(Room, {
 });
 
 User.belongsToMany(Room, {
-  through: Reserve,
+  through: { model: Reserve, unique: false },
   as: "reservedRooms",
   foreignKey: "userId",
   otherKey: "roomId",
 });
 
 Room.belongsToMany(User, {
-  through: Reserve,
+  through: { model: Reserve, unique: false },
   as: "reservingUsers",
   foreignKey: "roomId",
   otherKey: "userId",

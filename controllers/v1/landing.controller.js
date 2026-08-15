@@ -611,3 +611,100 @@ exports.searchHotels = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getHotelDetails = async (req, res, next) => {
+  let filters;
+  try {
+    filters = parseSearchQuery({ ...req.query, page: 1, limit: 50 });
+  } catch (error) {
+    if (error instanceof LandingQueryError) {
+      return errorResponse(res, 400, error.message);
+    }
+    return next(error);
+  }
+
+  try {
+    const roomWhere = { status: { [Op.ne]: "MAINTAIN" } };
+    if (filters.capacity) roomWhere.capacity = { [Op.gte]: filters.capacity };
+
+    if (filters.checkIn && filters.checkOut) {
+      const reservedRooms = await Reserve.findAll({
+        where: {
+          startDate: { [Op.lt]: filters.checkOut },
+          endDate: { [Op.gt]: filters.checkIn },
+        },
+        attributes: ["roomId"],
+        raw: true,
+      });
+      const reservedRoomIds = [...new Set(reservedRooms.map((reserve) => reserve.roomId))];
+      if (reservedRoomIds.length) roomWhere.id = { [Op.notIn]: reservedRoomIds };
+    }
+
+    const [hotel, provinceMap] = await Promise.all([
+      Hotel.findOne({
+        where: { slug: req.params.slug },
+        attributes: [
+          "id",
+          "name",
+          "slug",
+          "cover",
+          "stars",
+          "city",
+          "address",
+          "description",
+          "metroAccess",
+          "geometry",
+        ],
+        include: [
+          {
+            model: Room,
+            attributes: [
+              "id",
+              "name",
+              "slug",
+              "capacity",
+              "price",
+              "status",
+              "bookType",
+              "bathService",
+              "balcony",
+              "geoDirection",
+              "kitchen",
+              "description",
+            ],
+            where: roomWhere,
+            required: false,
+          },
+          {
+            model: Amenity,
+            as: "amenities",
+            attributes: ["id", "title", "description"],
+            through: { attributes: [] },
+            where: { isActive: true },
+            required: false,
+          },
+          {
+            model: HotelImage,
+            as: "images",
+            attributes: ["id", "url", "order", "isCover"],
+            required: false,
+          },
+        ],
+      }),
+      loadProvinceMap(),
+    ]);
+
+    if (!hotel) return errorResponse(res, 404, "Hotel not found.");
+
+    return successResponse(res, 200, "", {
+      hotel: serializeHotel(hotel, provinceMap),
+      availability: {
+        checkIn: filters.checkIn || null,
+        checkOut: filters.checkOut || null,
+        capacity: filters.capacity || 1,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};

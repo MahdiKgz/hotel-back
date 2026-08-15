@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const Hotel = require("../../models/v1/Hotel.model");
 const Reserve = require("../../models/v1/Reserve.model");
 const Room = require("../../models/v1/Room.model");
@@ -13,18 +14,31 @@ exports.createReserve = async (req, res, next) => {
     const { id } = req.user;
     await createReservationValidator.validate(req.body, { abortEarly: false });
 
+    const room = await Room.findOne({
+      where: {
+        id: roomId,
+        hotel_id: hotelId,
+      },
+    });
+
+    if (!room || room.status === "MAINTAIN") {
+      return errorResponse(res, 404, "اتاق انتخاب‌شده در دسترس نیست.");
+    }
+
     const hasReserved = await Reserve.findOne({
       where: {
-        room_id: roomId,
+        roomId,
+        startDate: { [Op.lt]: endDate },
+        endDate: { [Op.gt]: startDate },
       },
       raw: true,
     });
 
     if (hasReserved !== null) {
-      return errorResponse(res, 404, "اتاق در حال حاضر رزرو است.");
+      return errorResponse(res, 409, "این اتاق در تاریخ انتخابی رزرو شده است.");
     }
 
-    await Reserve.create({
+    const reservation = await Reserve.create({
       roomId,
       hotelId,
       userId: id,
@@ -32,8 +46,64 @@ exports.createReserve = async (req, res, next) => {
       endDate,
       note,
     });
-    await Room.update({ status: "RESERVED" }, { where: { id: roomId } });
-    return successResponse(res, 201, "اتاق با موفقیت رزرو شد");
+    return successResponse(res, 201, "اتاق با موفقیت رزرو شد", {
+      reservation: {
+        id: reservation.id,
+        hotelId: reservation.hotelId,
+        roomId: reservation.roomId,
+        startDate: reservation.startDate,
+        endDate: reservation.endDate,
+        note: reservation.note,
+        createdAt: reservation.createdAt,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getMyReserves = async (req, res, next) => {
+  try {
+    const reserves = await Reserve.findAll({
+      where: { userId: req.user.id },
+      include: [
+        {
+          model: Room,
+          as: "room",
+          attributes: ["id", "name", "slug", "capacity", "price"],
+        },
+        {
+          model: Hotel,
+          as: "hotel",
+          attributes: ["id", "name", "slug", "cover", "address", "stars"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    return successResponse(res, 200, "", { reserves });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.cancelMyReserve = async (req, res, next) => {
+  try {
+    const reservation = await Reserve.findOne({
+      where: { id: req.params.reservationId, userId: req.user.id },
+    });
+
+    if (!reservation) {
+      return errorResponse(res, 404, "رزرو مورد نظر پیدا نشد.");
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    if (reservation.startDate <= today) {
+      return errorResponse(res, 400, "رزروی که شروع شده است قابل لغو نیست.");
+    }
+
+    await reservation.destroy();
+    return successResponse(res, 200, "رزرو با موفقیت لغو شد.");
   } catch (err) {
     next(err);
   }
