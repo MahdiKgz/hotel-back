@@ -1,4 +1,6 @@
 const fs = require("fs");
+const db = require("../../configs/db");
+const Recovery = require("../../models/v1/AccountRecovery.model");
 const User = require("../../models/v1/User.model");
 const redis = require("../../redis");
 const {
@@ -16,6 +18,8 @@ const {
 const bcrypt = require("bcryptjs");
 const Ban = require("../../models/v1/Ban.model");
 
+const demoOtpEnabled = () => process.env.NODE_ENV !== "production" && process.env.ENABLE_DEMO_SMS_OTP === "true";
+
 exports.register = async (req, res, next) => {
   try {
     const { phone, password } = req.body;
@@ -31,9 +35,10 @@ exports.register = async (req, res, next) => {
     }
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    await User.create({ ...req.body, role: "GUEST", password: hashedPassword });
+    const { fullName, email, address, bio } = req.body;
+    const user = await User.create({ fullName, phone, email, address, bio, role: "GUEST", password: hashedPassword });
 
-    const token = generateToken({ phone });
+    const token = generateToken(user);
     return successResponse(res, 201, "User created successfully !!", {
       phone,
       token,
@@ -55,7 +60,7 @@ exports.login = async (req, res, next) => {
       return errorResponse(res, 400, "You are banned.");
     }
 
-    const existingUser = await User.findOne({ phone });
+    const existingUser = await User.findOne({ where: { phone } });
 
     if (existingUser === null) {
       return errorResponse(res, 404, "User not found !!");
@@ -70,7 +75,7 @@ exports.login = async (req, res, next) => {
       return errorResponse(res, 400, "Username or password is incorrect !!");
     }
 
-    const token = generateToken({ phone });
+    const token = generateToken(existingUser);
     return successResponse(res, 200, "You have logged in successfully !!", {
       phone,
       token,
@@ -82,6 +87,7 @@ exports.login = async (req, res, next) => {
 
 exports.sendOTP = async (req, res, next) => {
   try {
+    if (!demoOtpEnabled()) return errorResponse(res, 503, "SMS login unavailable");
     const { phone } = req.body;
 
     const isBanned = await Ban.findOne({
@@ -125,6 +131,7 @@ exports.sendOTP = async (req, res, next) => {
 
 exports.verifyOTP = async (req, res, next) => {
   try {
+    if (!demoOtpEnabled()) return errorResponse(res, 503, "SMS login unavailable");
     const { phone, otp } = req.body;
 
     const savedOtp = await redis.get(getOtpRedisPattern(phone));
@@ -152,10 +159,11 @@ exports.verifyOTP = async (req, res, next) => {
       );
     }
 
-    const token = generateToken({ phone });
+    const token = generateToken(existingUser);
 
+    const { password: _password, ...user } = existingUser.get({ plain: true });
     return successResponse(res, 200, "You have logged in Successfully !!", {
-      user: existingUser,
+      user,
       token,
     });
   } catch (err) {
@@ -202,7 +210,8 @@ exports.resetPassword = async (req, res, next) => {
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 12);
 
-    await User.update({ password: hashedNewPassword }, { where: { phone } });
+    const [updated] = await User.update({ password: hashedNewPassword }, { where: { id: user.id, password: user.password } });
+    if (!updated) return errorResponse(res, 409, "Password has changed");
 
     return successResponse(res, 200, "password Changed successfully !!");
   } catch (err) {
@@ -210,7 +219,6 @@ exports.resetPassword = async (req, res, next) => {
   }
 };
 
-// ُ‌ TODO : handle forget-password implementation
 exports.getMe = async (req, res, next) => {
   try {
     const user = req.user;
@@ -252,21 +260,18 @@ exports.setAvatar = async (req, res, next) => {
 
 exports.updateProfile = async (req, res, next) => {
   try {
-    const { phone } = req.user;
-
-    console.log(req.body);
-    await updateValidator.validate(req.body, { abortEarly: false });
-    const user = await User.findOne({
-      where: {
-        phone,
-      },
+    const { fullName, phone, email, address, bio } = await updateValidator.validate(req.body, { abortEarly: false });
+    const updated = await db.transaction(async (transaction) => {
+      const user = await User.findByPk(req.user.id, { transaction, lock: transaction.LOCK.UPDATE });
+      if (!user) return false;
+      const normalize = (value) => value?.trim().toLowerCase() || null;
+      if (email !== undefined && normalize(user.email) !== normalize(email)) {
+        await Recovery.update({ verifiedEmail: null }, { where: { userId: user.id }, transaction });
+      }
+      await user.update({ fullName, phone, email: email === undefined ? undefined : normalize(email), address, bio }, { transaction });
+      return true;
     });
-
-    if (user === null) {
-      return errorResponse(res, 404, "User NOT found !!");
-    }
-
-    await User.update({ ...req.body }, { where: { phone } });
+    if (!updated) return errorResponse(res, 404, "User NOT found !!");
 
     return successResponse(res, 200, "User updated successfully !!");
   } catch (err) {

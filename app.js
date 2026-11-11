@@ -1,5 +1,10 @@
 const express = require("express");
 const app = express();
+
+const proxyHops = Number(process.env.TRUST_PROXY_HOPS || 0);
+if (Number.isSafeInteger(proxyHops) && proxyHops > 0) {
+  app.set("trust proxy", proxyHops);
+}
 const morgan = require("morgan");
 const path = require("path");
 const cors = require("cors");

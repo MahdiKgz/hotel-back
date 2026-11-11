@@ -11,6 +11,7 @@ const {
   setAvatar,
   updateProfile,
 } = require("../../controllers/v1/auth.controller");
+const recovery = require("../../controllers/v1/account-recovery.controller");
 const auth = require("../../middlewares/auth");
 
 const { multerStorage } = require("../../utils/multer-uploader");
@@ -22,6 +23,10 @@ authRouter.route("/login").post(login);
 authRouter.route("/send-otp").post(sendOTP);
 authRouter.route("/verify").post(verifyOTP);
 authRouter.route("/reset-password").post(auth, resetPassword);
+authRouter.post("/request-email-verification", auth, recovery.requestVerification);
+authRouter.post("/verify-email", recovery.verifyEmail);
+authRouter.post("/forgot-password", recovery.forgotPassword);
+authRouter.post("/recover-password", recovery.recoverPassword);
 authRouter.route("/me").get(auth, getMe);
 
 authRouter.route("/avatar").post(auth, upload.single("avatar"), setAvatar);

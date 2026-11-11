@@ -7,13 +7,8 @@ const seedDatabase = require("./seeders");
 
 async function ensureReservationPrimaryKey() {
   const queryInterface = db.getQueryInterface();
-  let columns;
-  try {
-    columns = await queryInterface.describeTable("Reserves");
-  } catch (error) {
-    if (error?.original?.code === "ER_NO_SUCH_TABLE") return;
-    throw error;
-  }
+  if (!(await queryInterface.showAllTables()).includes("Reserves")) return;
+  const columns = await queryInterface.describeTable("Reserves");
 
   let indexes = await queryInterface.showIndex("Reserves");
   if (!columns.id) {

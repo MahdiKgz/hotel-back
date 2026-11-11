@@ -1,9 +1,13 @@
+const { createHmac } = require("node:crypto");
 const jwt = require("jsonwebtoken");
 const redis = require("../redis");
 const bcrypt = require("bcryptjs");
 
-const generateToken = ({ phone }) => {
-  const token = jwt.sign({ phone }, process.env.JWT_SECRET, {
+const passwordProof = (user) => createHmac("sha256", process.env.JWT_SECRET)
+  .update(JSON.stringify(["session-password", user.id, user.password])).digest("hex");
+
+const generateToken = (user) => {
+  const token = jwt.sign({ phone: user.phone, proof: passwordProof(user) }, process.env.JWT_SECRET, {
     expiresIn: "30d",
   });
   return token;
@@ -55,6 +59,7 @@ const generateOtp = async (phone, length = 4, expireTime = 1) => {
 
 module.exports = {
   generateToken,
+  passwordProof,
   generateOtp,
   getOtpDetails,
   getOtpRedisPattern,

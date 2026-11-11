@@ -447,6 +447,113 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/auth/request-email-verification": {
+      post: {
+        tags: ["Auth"],
+        summary: "Send a verification link to the signed-in user’s saved email",
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["password"],
+                properties: {
+                  password: { type: "string", format: "password" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          202: { description: "Success" },
+          400: { description: "Incorrect password or missing email" },
+          401: { description: "Unauthorized" },
+          503: { description: "Email service unavailable" },
+          429: { description: "Too many requests" },
+        },
+      },
+    },
+    "/api/v1/auth/verify-email": {
+      post: {
+        tags: ["Auth"],
+        summary: "Confirm email ownership using a one-time token",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["token"],
+                properties: {
+                  token: { type: "string" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: "Success" },
+          400: { description: "Invalid or expired token" },
+          409: { description: "Email already verified for another account" },
+          429: { description: "Too many requests" },
+        },
+      },
+    },
+    "/api/v1/auth/forgot-password": {
+      post: {
+        tags: ["Auth"],
+        summary: "Request a recovery link for a verified email",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["email"],
+                properties: {
+                  email: { type: "string", format: "email" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          202: { description: "Request accepted without disclosing account status" },
+          400: { description: "Invalid email" },
+          503: { description: "Email service unavailable" },
+          429: { description: "Too many requests" },
+        },
+      },
+    },
+    "/api/v1/auth/recover-password": {
+      post: {
+        tags: ["Auth"],
+        summary: "Set a new password using a one-time recovery token",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["token", "password", "confirmPassword"],
+                properties: {
+                  token: { type: "string" },
+                  password: { type: "string", format: "password" },
+                  confirmPassword: { type: "string", format: "password" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: "Success" },
+          400: { description: "Invalid token or password" },
+          429: { description: "Too many requests" },
+        },
+      },
+    },
     "/api/v1/auth/me": {
       get: {
         tags: ["Auth"],

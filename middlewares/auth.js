@@ -1,5 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { errorResponse } = require("../utils/responses");
+const Recovery = require("../models/v1/AccountRecovery.model");
+const { passwordProof } = require("../utils/auth");
 const User = require("../models/v1/User.model");
 
 const auth = async (req, res, next) => {
@@ -38,6 +40,7 @@ const auth = async (req, res, next) => {
         "avatar",
         "address",
         "bio",
+        "password",
       ],
     });
 
@@ -45,7 +48,17 @@ const auth = async (req, res, next) => {
       return errorResponse(res, 404, "User not found");
     }
 
-    req.user = user;
+    const recovery = await Recovery.findByPk(user.id);
+    if (decoded.proof ? decoded.proof !== passwordProof(user) : recovery?.recoveredAt) {
+      return errorResponse(res, 401, "Session expired");
+    }
+
+    delete user.password;
+    req.user = {
+      ...user,
+      emailVerified: Boolean(recovery?.verifiedEmail &&
+        recovery.verifiedEmail === user.email?.trim().toLowerCase()),
+    };
     next();
   } catch (err) {
     console.error("Auth error:", err.message); // برای دیباگ
