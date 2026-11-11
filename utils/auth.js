@@ -1,6 +1,5 @@
 const { createHmac } = require("node:crypto");
 const jwt = require("jsonwebtoken");
-const redis = require("../redis");
 const bcrypt = require("bcryptjs");
 
 const passwordProof = (user) => createHmac("sha256", process.env.JWT_SECRET)
@@ -18,6 +17,7 @@ function getOtpRedisPattern(phone) {
 }
 
 async function getOtpDetails(phone) {
+  const redis = require("../redis");
   const otp = await redis.get(getOtpRedisPattern(phone));
   if (!otp) {
     return {
@@ -40,6 +40,7 @@ async function getOtpDetails(phone) {
 }
 
 const generateOtp = async (phone, length = 4, expireTime = 1) => {
+  const redis = require("../redis");
   const digist = "0123456789";
   let otp = "";
 
